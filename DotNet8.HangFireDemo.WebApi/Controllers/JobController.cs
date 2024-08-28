@@ -1,4 +1,5 @@
-﻿using Hangfire;
+﻿using DotNet8.HangFireDemo.WebApi.Jobs;
+using Hangfire;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +13,8 @@ namespace DotNet8.HangFireDemo.WebApi.Controllers
         [Route("CreateBackgroundJob")]
         public IActionResult CreateBackgroundJob()
         {
-            BackgroundJob.Enqueue(() => Console.WriteLine("Background Job Triggered"));
+            // BackgroundJob.Enqueue(() => Console.WriteLine("Background Job Triggered"));
+            BackgroundJob.Enqueue<TestJob>(x => x.WriteLog("Background Job Triggered"));
             return Ok();
         }
 
@@ -22,7 +24,8 @@ namespace DotNet8.HangFireDemo.WebApi.Controllers
         {
             var scheduledDateTime = DateTime.Now.AddSeconds(5);
             var dateTimeOffSet = new DateTimeOffset(scheduledDateTime);
-            BackgroundJob.Schedule(()=>Console.WriteLine("Scheduled Job Triggered"), dateTimeOffSet);
+            //  BackgroundJob.Schedule(()=>Console.WriteLine("Scheduled Job Triggered"), dateTimeOffSet);
+            BackgroundJob.Schedule<TestJob>(x => x.WriteLog("Scheduled Job Triggered"), dateTimeOffSet);
             return Ok();
         }
 
@@ -32,10 +35,10 @@ namespace DotNet8.HangFireDemo.WebApi.Controllers
         {
             var scheduledDateTime = DateTime.Now.AddSeconds(6);
             var dateTimeOffSet = new DateTimeOffset(scheduledDateTime);
-            var jobId=BackgroundJob.Schedule(()=>Console.WriteLine("Scheduled Jo Triggered"),dateTimeOffSet);
-            var job2Id = BackgroundJob.ContinueJobWith(jobId, () => Console.WriteLine("Continuation Job1 Triggered"));
-            var job3Id = BackgroundJob.ContinueJobWith(job2Id, () => Console.WriteLine("Continuation Job2 Triggered"));
-            var job4Id = BackgroundJob.ContinueJobWith(job3Id, () => Console.WriteLine("Continuation Job3 Triggered"));
+            var jobId = BackgroundJob.Schedule<TestJob>(x => x.WriteLog("Scheduled Jo Triggered"), dateTimeOffSet);
+            var job2Id = BackgroundJob.ContinueJobWith<TestJob>(jobId, x => x.WriteLog("Continuation Job1 Triggered"));
+            var job3Id = BackgroundJob.ContinueJobWith<TestJob>(job2Id, x => x.WriteLog("Continuation Job2 Triggered"));
+            var job4Id = BackgroundJob.ContinueJobWith<TestJob>(job3Id, x => x.WriteLog("Continuation Job3 Triggered"));
             return Ok();
         }
 
@@ -43,7 +46,7 @@ namespace DotNet8.HangFireDemo.WebApi.Controllers
         [Route("CreateRecurringJob")]
         public IActionResult CreateRecurringJob()
         {
-            RecurringJob.AddOrUpdate("Recurring Job 1",()=>Console.WriteLine("Recurring Job Triggered"),"* * * * *");
+            RecurringJob.AddOrUpdate<TestJob>("Recurring Job 1", x => x.WriteLog("Recurring Job Triggered"), "* * * * *");
             return Ok();
         }
     }
