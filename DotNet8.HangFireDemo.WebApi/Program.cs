@@ -1,4 +1,5 @@
 using Hangfire;
+using HangfireBasicAuthenticationFilter;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,19 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseHangfireDashboard();
+app.UseHangfireDashboard("/hangfire",new DashboardOptions
+{
+    DashboardTitle="HangFireDemo",
+    DarkModeEnabled=false,
+    DisplayStorageConnectionString=false,
+    Authorization = new[]
+    {
+        new HangfireCustomBasicAuthenticationFilter
+        {
+            User="Minkhant",
+            Pass="HninEi"
+        }
+    }
+});
 
 app.Run();
